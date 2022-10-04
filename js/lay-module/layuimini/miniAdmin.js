@@ -12,11 +12,6 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
         element = layui.element ,
         miniTab = layui.miniTab;
 
-    if (!/http(s*):\/\//.test(location.href)) {
-        var tips = "请先将项目部署至web容器（Apache/Tomcat/Nginx/IIS/等），否则部分数据将无法显示";
-        return layer.alert(tips);
-    }
-
     var miniAdmin = {
 
         /**
@@ -30,52 +25,75 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
          * @param options.loadingTime 初始化加载时间
          * @param options.pageAnim iframe窗口动画
          * @param options.maxTabNum 最大的tab打开数量
+         * @param options.notTabButPage 是否在新窗口打开菜单
          */
-        render: function (options) {
+        render: function (options,menu) {
+            options.notTabButPage = options.notTabButPage || false;
+            options.bgColorDefault = options.bgColorDefault || 0;
             options.iniUrl = options.iniUrl || null;
             options.clearUrl = options.clearUrl || null;
             options.urlHashLocation = options.urlHashLocation || false;
-            options.bgColorDefault = options.bgColorDefault || 0;
             options.multiModule = options.multiModule || false;
             options.menuChildOpen = options.menuChildOpen || false;
             options.loadingTime = options.loadingTime || 1;
             options.pageAnim = options.pageAnim || false;
             options.maxTabNum = options.maxTabNum || 20;
-            $.getJSON(options.iniUrl, function (data) {
-                if (data == null) {
-                    miniAdmin.error('暂无菜单信息')
-                } else {
-                    miniAdmin.renderLogo(data.logoInfo);
-                    miniAdmin.renderClear(options.clearUrl);
-                    miniAdmin.renderHome(data.homeInfo);
-                    miniAdmin.renderAnim(options.pageAnim);
-                    miniAdmin.listen();
-                    miniMenu.render({
-                        menuList: data.menuInfo,
-                        multiModule: options.multiModule,
-                        menuChildOpen: options.menuChildOpen
-                    });
-                    miniTab.render({
-                        filter: 'layuiminiTab',
-                        urlHashLocation: options.urlHashLocation,
-                        multiModule: options.multiModule,
-                        menuChildOpen: options.menuChildOpen,
-                        maxTabNum: options.maxTabNum,
-                        menuList: data.menuInfo,
-                        homeInfo: data.homeInfo,
-                        listenSwichCallback: function () {
-                            miniAdmin.renderDevice();
-                        }
-                    });
-                    miniTheme.render({
-                        bgColorDefault: options.bgColorDefault,
-                        listen: true,
-                    });
-                    miniAdmin.deleteLoader(options.loadingTime);
+            menu = menu || {};
+
+            if(options.notTabButPage === false){
+                if (!/http(s*):\/\//.test(location.href)) {
+                    var tips = "请先将项目部署至web容器（Apache/Tomcat/Nginx/IIS/等），否则部分数据将无法显示";
+                    return layer.alert(tips);
                 }
-            }).fail(function () {
-                miniAdmin.error('菜单接口有误');
-            });
+            }
+
+            if(options.iniUrl === null){
+                miniAdmin.renderData(options,menu);
+            }else{
+                $.getJSON(options.iniUrl, function (data) {
+                    miniAdmin.renderData(options,data);
+                }).fail(function () {
+                    miniAdmin.error('菜单接口有误');
+                });
+            }
+        },
+
+        renderData: function (options,menu){
+            if (menu == null) {
+                miniAdmin.error('暂无菜单信息')
+            } else {
+                miniAdmin.renderLogo(menu.logoInfo);
+                miniAdmin.renderClear(options.clearUrl);
+                if (menu.homeInfo !==undefined){
+                    miniAdmin.renderHome(menu.homeInfo);
+                }
+                miniAdmin.renderAnim(options.pageAnim);
+                miniAdmin.listen();
+                miniMenu.render({
+                    notTabButPage:options.notTabButPage,
+                    menuList: menu.menuInfo,
+                    multiModule: options.multiModule,
+                    menuChildOpen: options.menuChildOpen
+                });
+                miniTab.render({
+                    filter: 'layuiminiTab',
+                    urlHashLocation: options.urlHashLocation, // 哈希定位？？
+                    multiModule: options.multiModule,
+                    menuChildOpen: options.menuChildOpen,
+                    maxTabNum: options.maxTabNum,
+                    menuList: menu.menuInfo,
+                    homeInfo: menu.homeInfo,
+                    listenSwichCallback: function () {
+                        console.log("Tab listenSwichCallback");
+                        miniAdmin.renderDevice();
+                    }
+                });
+                miniTheme.render({
+                    bgColorDefault: options.bgColorDefault,
+                    listen: true,
+                });
+                miniAdmin.deleteLoader(options.loadingTime);
+            }
         },
 
         /**
@@ -248,13 +266,14 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
              * 清理
              */
             $('body').on('click', '[data-clear]', function () {
+                console.log("清理");
                 var loading = layer.load(0, {shade: false, time: 2 * 1000});
                 sessionStorage.clear();
 
                 // 判断是否清理服务端
                 var clearUrl = $(this).attr('data-href');
                 if (clearUrl != undefined && clearUrl != '' && clearUrl != null) {
-                    $.getJSON(clearUrl, function (data, status) {
+                    $.getJSON(clearUrl, function (data) {
                         layer.close(loading);
                         if (data.code != 1) {
                             return miniAdmin.error(data.msg);
@@ -263,11 +282,11 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
                         }
                     }).fail(function () {
                         layer.close(loading);
-                        return miniAdmin.error('清理缓存接口有误');
+                        return miniAdmin.error('服务器怪怪的 ~ ');
                     });
                 } else {
                     layer.close(loading);
-                    return miniAdmin.success('清除缓存成功');
+                    return miniAdmin.success('栓Q，我好了！！');
                 }
             });
 
@@ -275,6 +294,8 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
              * 刷新
              */
             $('body').on('click', '[data-refresh]', function () {
+                console.log("刷新");
+
                 $(".layui-tab-item.layui-show").find("iframe")[0].contentWindow.location.reload();
                 miniAdmin.success('刷新成功');
             });
@@ -283,6 +304,8 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
              * 监听提示信息
              */
             $("body").on("mouseenter", ".layui-nav-tree .menu-li", function () {
+                console.log("提示信息");
+
                 if (miniAdmin.checkMobile()) {
                     return false;
                 }
@@ -305,6 +328,8 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
             });
 
             $("body").on("mouseleave", ".popup-tips", function () {
+                console.log("鼠标离开？？");
+               
                 if (miniAdmin.checkMobile()) {
                     return false;
                 }
@@ -323,6 +348,8 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
              * 全屏
              */
             $('body').on('click', '[data-check-screen]', function () {
+                console.log("全屏");
+               
                 var check = $(this).attr('data-check-screen');
                 if (check == 'full') {
                     miniAdmin.fullScreen();
@@ -339,6 +366,8 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
              * 点击遮罩层
              */
             $('body').on('click', '.layuimini-make', function () {
+                console.log("遮罩被点击了");
+
                 miniAdmin.renderDevice();
             });
 

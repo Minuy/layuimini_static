@@ -225,6 +225,7 @@
                       "title": "表单4",
                       "href": "page/form.html?v=1",
                       "icon": "fa fa-calendar",
+                      "active":true,
                       "target": "_self"
                     }
                   ]

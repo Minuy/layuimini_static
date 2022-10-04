@@ -19,12 +19,13 @@ layui.define(["element", "layer", "jquery"], function (exports) {
         render: function (options) {
             options.filter = options.filter || null;
             options.multiModule = options.multiModule || false;
-            options.urlHashLocation = options.urlHashLocation || false;
+            options.urlHashLocation = options.urlHashLocation || false; // urlHashLocation
             options.maxTabNum = options.maxTabNum || 20;
             options.menuList = options.menuList || [];  // todo 后期菜单想改为不操作dom, 而是直接操作初始化传过来的数据
             options.homeInfo = options.homeInfo || {};
             options.listenSwichCallback = options.listenSwichCallback || function () {
             };
+
             miniTab.listen(options);
             miniTab.listenRoll();
             miniTab.listenSwitch(options);
@@ -66,6 +67,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param tabId
          */
         change: function (tabId) {
+            console.log("切换选项卡" + tabId);
             element.tabChange('layuiminiTab', tabId);
         },
 
@@ -75,6 +77,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param isParent
          */
         delete: function (tabId, isParent) {
+            console.log("删除Tab");
             // todo 未知BUG，不知道是不是layui问题，必须先删除元素
             $(".layuimini-tab .layui-tab-title .layui-unselect.layui-tab-bar").remove();
 
@@ -89,6 +92,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * 在iframe层打开新tab方法
          */
         openNewTabByIframe: function (options) {
+            console.log("在窗口中打开新窗口");
             options.href = options.href || null;
             options.title = options.title || null;
             var loading = parent.layer.load(0, {shade: false, time: 2 * 1000});
@@ -110,6 +114,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * 在iframe层关闭当前tab方法
          */
         deleteCurrentByIframe: function () {
+            
+            console.log("关闭这个框架层");
             var ele = $(".layuimini-tab .layui-tab-title li.layui-this", parent.document);
             if (ele.length > 0) {
                 var layId = $(ele[0]).attr('lay-id');
@@ -122,6 +128,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          */
         check: function (tabId, isIframe) {
             // 判断选项卡上是否有
+            
+            console.log("检查选项卡");
             var checkTab = false;
             if (isIframe === undefined || isIframe === false) {
                 $(".layui-tab-title li").each(function () {
@@ -147,6 +155,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param left
          */
         openTabRignMenu: function (tabId, left) {
+            
+            console.log("右键菜单开启");
             miniTab.closeTabRignMenu();
             var menuHtml = '<div class="layui-unselect layui-form-select layui-form-selected layuimini-tab-mousedown layui-show" data-tab-id="' + tabId + '" style="left: ' + left + 'px!important">\n' +
                 '<dl>\n' +
@@ -164,6 +174,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * 关闭tab右键菜单
          */
         closeTabRignMenu: function () {
+            
+            console.log("右键菜单关闭");
             $('.layuimini-tab-mousedown').remove();
             $('.layuimini-tab-make').remove();
         },
@@ -174,6 +186,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param menuList
          */
         searchMenu: function (href, menuList) {
+            
+            console.log("查菜单");
             var menu;
             for (key in menuList) {
                 var item = menuList[key];
@@ -204,6 +218,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * 打开新窗口
              */
             $('body').on('click', '[layuimini-href]', function () {
+                
+            console.log("打开新窗口");
                 var loading = layer.load(0, {shade: false, time: 2 * 1000});
                 var tabId = $(this).attr('layuimini-href'),
                     href = $(this).attr('layuimini-href'),
@@ -242,6 +258,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * 在iframe子菜单上打开新窗口
              */
             $('body').on('click', '[layuimini-content-href]', function () {
+                
+            console.log("在iframe子菜单上打开新窗口");
                 var loading = parent.layer.load(0, {shade: false, time: 2 * 1000});
                 var tabId = $(this).attr('layuimini-content-href'),
                     href = $(this).attr('layuimini-content-href'),
@@ -271,7 +289,9 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * 关闭选项卡
              **/
             $('body').on('click', '.layuimini-tab .layui-tab-title .layui-tab-close', function () {
-                var loading = layer.load(0, {shade: false, time: 2 * 1000});
+               
+            console.log("关闭选项卡");
+             var loading = layer.load(0, {shade: false, time: 2 * 1000});
                 var $parent = $(this).parent();
                 var tabId = $parent.attr('lay-id');
                 if (tabId !== undefined || tabId !== null) {
@@ -284,6 +304,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * 选项卡操作
              */
             $('body').on('click', '[layuimini-tab-close]', function () {
+                
+            console.log("选项卡操作");
                 var loading = layer.load(0, {shade: false, time: 2 * 1000});
                 var closeType = $(this).attr('layuimini-tab-close');
                 $(".layuimini-tab .layui-tab-title li").each(function () {
@@ -309,6 +331,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * 禁用网页右键
              */
             $(".layuimini-tab .layui-tab-title").unbind("mousedown").bind("contextmenu", function (e) {
+                
+            console.log("网页右键被禁用");
                 e.preventDefault();
                 return false;
             });
@@ -317,6 +341,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * 注册鼠标右键
              */
             $('body').on('mousedown', '.layuimini-tab .layui-tab-title li', function (e) {
+                
+            console.log("注册鼠标右键");
                 var left = $(this).offset().left - $('.layuimini-tab ').offset().left + ($(this).width() / 2),
                     tabId = $(this).attr('lay-id');
                 if (e.which === 3) {
@@ -328,6 +354,8 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * 关闭tab右键菜单
              */
             $('body').on('click', '.layui-body,.layui-header,.layuimini-menu-left,.layuimini-tab-make', function () {
+               
+            console.log("关闭tab右键菜单");
                 miniTab.closeTabRignMenu();
             });
 
@@ -335,6 +363,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
              * tab右键选项卡操作
              */
             $('body').on('click', '[layuimini-tab-menu-close]', function () {
+                console.log("tab右键选项卡操作");
                 var loading = layer.load(0, {shade: false, time: 2 * 1000});
                 var closeType = $(this).attr('layuimini-tab-menu-close'),
                     currentTabId = $('.layuimini-tab-mousedown').attr('data-tab-id');
@@ -363,6 +392,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param options
          */
         listenSwitch: function (options) {
+            console.log("监听tab切换");
             options.filter = options.filter || null;
             options.multiModule = options.multiModule || false;
             options.urlHashLocation = options.urlHashLocation || false;
@@ -398,6 +428,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @returns {boolean}
          */
         listenHash: function (options) {
+            console.log("监听hash变化");
             options.urlHashLocation = options.urlHashLocation || false;
             options.maxTabNum = options.maxTabNum || 20;
             options.homeInfo = options.homeInfo || {};
@@ -411,6 +442,9 @@ layui.define(["element", "layer", "jquery"], function (exports) {
 
             // 判断是否为右侧菜单
             var menu = miniTab.searchMenu(tabId, options.menuList);
+            console.log("判断是否为右侧菜单 menu");
+            console.log(menu);
+
             if (menu !== undefined) {
                 miniTab.create({
                     tabId: tabId,
@@ -461,6 +495,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * 监听滚动
          */
         listenRoll: function () {
+            console.log("监听滚动");
             $(".layuimini-tab-roll-left").click(function () {
                 miniTab.rollClick("left");
             });
@@ -474,6 +509,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param tabId
          */
         listenSwitchSingleModule: function (tabId) {
+            console.log("单模块切换");
             $("[layuimini-href]").each(function () {
                 if ($(this).attr("layuimini-href") === tabId) {
                     // 自动展开菜单栏
@@ -505,6 +541,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param tabId
          */
         listenSwitchMultiModule: function (tabId) {
+            console.log("多模块切换");
             $("[layuimini-href]").each(function () {
                 if ($(this).attr("layuimini-href") === tabId) {
 
@@ -544,6 +581,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * 自动定位
          */
         rollPosition: function () {
+            console.log("自动定位");
             var $tabTitle = $('.layuimini-tab  .layui-tab-title');
             var autoLeft = 0;
             $tabTitle.children("li").each(function () {
@@ -563,6 +601,7 @@ layui.define(["element", "layer", "jquery"], function (exports) {
          * @param direction
          */
         rollClick: function (direction) {
+            console.log("点击滚动");
             var $tabTitle = $('.layuimini-tab  .layui-tab-title');
             var left = $tabTitle.scrollLeft();
             if ('left' === direction) {
